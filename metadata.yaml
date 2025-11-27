@@ -1,5 +1,5 @@
 name: astrbot_plugin_aicu_analysis
-desc: AICU 评论数据查询
+desc: 通过UID查询AICU数据，生成包含B站用户数据、设备型号及近期评论统计的精美图片报表。
 version: 2.5.0
 author: Huahuatgc
 repo: https://github.com/Huahuatgc/astrbot_plugin_aicu
