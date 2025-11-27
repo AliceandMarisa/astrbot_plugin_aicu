@@ -9,9 +9,12 @@ astrbot_plugin_aicu_analysis/
 ├── _conf_schema.json    # 配置定义
 └── README.md            # 说明文档
 
- 使用前请先去控制台导入必要的库
- pip install "curl_cffi>=0.7.0" playwright jinja2
- playwright install chromium
+ 使用前请先去控制台导入必要的库：
+
+```bash
+pip install "curl_cffi>=0.7.0" playwright jinja2
+playwright install chromium
+
 ✨ 
  * 获取B 站头像、等级、粉丝数、关注数及个性签名。
  * 展示设备型号和曾用名。
