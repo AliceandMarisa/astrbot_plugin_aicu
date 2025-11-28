@@ -1,25 +1,52 @@
+# 标准库
+import asyncio
 import json
 import time
-import asyncio
-import jinja2  
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from collections import Counter
 
-# 异步
+# 第三方库
+import jinja2
 from curl_cffi.requests import AsyncSession
+from playwright.async_api import async_playwright
 
-# AstrBot 
+# AstrBot
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register, StarTools
-from astrbot.api import logger # 标准日志
-from playwright.async_api import async_playwright
+from astrbot.api import logger
 
 @register("aicu_analysis", "Huahuatgc", "AICU B站评论查询", "2.7.1", "https://github.com/Huahuatgc/astrbot_plugin_aicu")
 class AicuAnalysisPlugin(Star):
+    # API常量定义
+    AICU_BILI_API_URL = "https://worker.aicu.cc/api/bili/space"
+    AICU_MARK_API_URL = "https://api.aicu.cc/api/v3/user/getusermark"
+    AICU_REPLY_API_URL = "https://api.aicu.cc/api/v3/search/getreply"
+    
+    # 请求头常量
+    DEFAULT_HEADERS = {
+        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        'accept-language': "zh-CN,zh;q=0.9",
+        'cache-control': "no-cache",
+        'origin': "https://www.aicu.cc",
+        'referer': "https://www.aicu.cc/",
+        'pragma': "no-cache",
+        'priority': "u=1, i",
+        'sec-ch-ua': "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+        'sec-ch-ua-mobile': "?0",
+        'sec-ch-ua-platform': "\"Windows\"",
+        'sec-fetch-dest': "empty",
+        'sec-fetch-mode': "cors",
+        'sec-fetch-site': "same-site",
+    }
+    
+    # 浏览器配置
+    DEFAULT_AVATAR_URL = "https://i0.hdslb.com/bfs/face/member/noface.jpg"
+    
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
         self.config = config
+        self._browser = None  # 用于复用浏览器实例
         
         # 1. 使用框架提供的标准数据目录
         self.data_dir = StarTools.get_data_dir("aicu_analysis")
@@ -28,29 +55,60 @@ class AicuAnalysisPlugin(Star):
         
         # 2. 模板文件依然在插件源码目录
         self.plugin_dir = Path(__file__).parent
+    
+    async def _get_browser(self):
+        """
+        获取或创建浏览器实例
+        
+        Returns:
+            Browser: Playwright浏览器实例
+        """
+        if self._browser is None:
+            try:
+                playwright = await async_playwright().start()
+                # 尝试以正常方式启动，如果失败则尝试无沙箱模式
+                try:
+                    self._browser = await playwright.chromium.launch(headless=True)
+                except Exception:
+                    logger.warning("[AICU] 无法正常启动浏览器，尝试使用无沙箱模式")
+                    self._browser = await playwright.chromium.launch(headless=True, args=['--no-sandbox'])
+                self._playwright = playwright  # 保存playwright实例以便关闭
+            except Exception as e:
+                logger.error(f"[AICU] 启动浏览器失败: {e}")
+                raise e
+        return self._browser
+    
+    async def _close_browser(self):
+        """关闭浏览器实例"""
+        if self._browser:
+            await self._browser.close()
+            self._browser = None
+            if hasattr(self, '_playwright'):
+                await self._playwright.stop()
+                delattr(self, '_playwright')
+    
+    def __del__(self):
+        """析构函数，确保浏览器实例被正确关闭"""
+        if self._browser:
+            # 注意：__del__中不能使用await，这里只是标记需要关闭
+            # 实际的关闭逻辑应在显式调用的方法中完成
+            logger.info("[AICU] 插件卸载，请确保已关闭浏览器实例")
 
     # ================= 1. 异步请求封装 (解决并发问题) =================
     async def _make_request(self, url: str, params: dict, cookie_override: str = None):
         """
         异步通用请求
-        cookie_override: 用于重试时传入空 cookie，避免修改全局配置引发竞态条件
+        
+        Args:
+            url: 请求的URL
+            params: 请求参数
+            cookie_override: 用于重试时传入空 cookie，避免修改全局配置引发竞态条件
+            
+        Returns:
+            dict: 请求返回的JSON数据，失败时返回None
         """
-        # 严格复刻你验证过的 Headers
-        headers = {
-            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-            'accept-language': "zh-CN,zh;q=0.9",
-            'cache-control': "no-cache",
-            'origin': "https://www.aicu.cc",
-            'referer': "https://www.aicu.cc/",
-            'pragma': "no-cache",
-            'priority': "u=1, i",
-            'sec-ch-ua': "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
-            'sec-ch-ua-mobile': "?0",
-            'sec-ch-ua-platform': "\"Windows\"",
-            'sec-fetch-dest': "empty",
-            'sec-fetch-mode': "cors",
-            'sec-fetch-site': "same-site",
-        }
+        # 使用类中定义的默认请求头
+        headers = self.DEFAULT_HEADERS.copy()
 
         # 优先使用 override，其次使用配置，最后为空
         if cookie_override is not None:
@@ -74,13 +132,23 @@ class AicuAnalysisPlugin(Star):
 
     # ================= 2. 抓取逻辑 (解决竞态条件) =================
     async def _fetch_all_data(self, uid: str, page_size: int = 100):
+        """
+        并发获取所有用户数据
+        
+        Args:
+            uid: 用户ID
+            page_size: 评论页面大小
+            
+        Returns:
+            tuple: (bilibili数据, 标记数据, 评论数据)
+        """
         # 并发执行请求，效率更高
-        task_bili = self._make_request("https://worker.aicu.cc/api/bili/space", {'mid': uid})
-        task_mark = self._make_request("https://api.aicu.cc/api/v3/user/getusermark", {'uid': uid})
+        task_bili = self._make_request(self.AICU_BILI_API_URL, {'mid': uid})
+        task_mark = self._make_request(self.AICU_MARK_API_URL, {'uid': uid})
         
         # 评论接口先尝试带 Cookie
         reply_data = await self._make_request(
-            "https://api.aicu.cc/api/v3/search/getreply", 
+            self.AICU_REPLY_API_URL, 
             {'uid': uid, 'pn': "1", 'ps': str(page_size), 'mode': "0", 'keyword': ""}
         )
         
@@ -88,7 +156,7 @@ class AicuAnalysisPlugin(Star):
         if not reply_data or not reply_data.get('data'):
              logger.info("[AICU] 评论获取失败，尝试不带 Cookie 重试...")
              reply_data = await self._make_request(
-                "https://api.aicu.cc/api/v3/search/getreply", 
+                self.AICU_REPLY_API_URL, 
                 {'uid': uid, 'pn': "1", 'ps': str(page_size), 'mode': "0", 'keyword': ""},
                 cookie_override="" # 显式传入空字符串，覆盖默认配置
              )
@@ -98,9 +166,18 @@ class AicuAnalysisPlugin(Star):
 
     # ================= 3. 数据解析 (拆分函数以提升可维护性) =================
     def _parse_profile(self, bili_raw, uid):
-        """解析 B 站个人资料"""
+        """
+        解析 B 站个人资料
+        
+        Args:
+            bili_raw: 从 B 站API获取的原始数据
+            uid: 用户ID
+            
+        Returns:
+            dict: 包含用户个人资料的字典
+        """
         profile = {
-            "name": f"UID:{uid}", "avatar": "https://i0.hdslb.com/bfs/face/member/noface.jpg",
+            "name": f"UID:{uid}", "avatar": self.DEFAULT_AVATAR_URL,
             "sign": "", "level": 0, "vip_label": "", "fans": 0, "following": 0
         }
         
@@ -124,7 +201,15 @@ class AicuAnalysisPlugin(Star):
         return profile
 
     def _parse_device(self, mark_raw):
-        """解析设备信息"""
+        """
+        解析设备信息
+        
+        Args:
+            mark_raw: 从AICU API获取的设备标记原始数据
+            
+        Returns:
+            tuple: (设备名称, 历史名称列表)
+        """
         device_name = "未知设备"
         history_names = []
         
@@ -167,7 +252,8 @@ class AicuAnalysisPlugin(Star):
             })
 
         hour_counts = Counter(hours)
-        top_hours = dict(sorted(hour_counts.most_common(5), key=lambda x: x[0]))
+        # 直接使用 most_common 的结果，保持按评论数量从高到低排序
+        top_hours = dict(hour_counts.most_common(5))
         max_hour_count = max(hour_counts.values()) if hour_counts else 1
         active_hour = hour_counts.most_common(1)[0][0] if hour_counts else "N/A"
         avg_len = round(sum(lengths) / len(lengths), 1) if lengths else 0
@@ -185,6 +271,15 @@ class AicuAnalysisPlugin(Star):
 
     # ================= 4. 图片渲染逻辑 =================
     async def _render_image(self, render_data):
+        """
+        渲染HTML模板为图片
+        
+        Args:
+            render_data: 包含渲染所需数据的字典
+            
+        Returns:
+            str: 生成的图片文件路径
+        """
         template_path = self.plugin_dir / "template.html"
         if not template_path.exists():
             raise FileNotFoundError("找不到 template.html 文件")
@@ -199,9 +294,11 @@ class AicuAnalysisPlugin(Star):
         file_path = self.output_dir / file_name
         
         try:
-            async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True, args=['--no-sandbox'])
-                page = await browser.new_page(viewport={'width': 600, 'height': 800}, device_scale_factor=2)
+            # 使用复用的浏览器实例
+            browser = await self._get_browser()
+            page = await browser.new_page(viewport={'width': 600, 'height': 800}, device_scale_factor=2)
+            
+            try:
                 await page.set_content(html_content, wait_until='networkidle')
                 
                 try:
@@ -209,8 +306,8 @@ class AicuAnalysisPlugin(Star):
                 except Exception as e:
                     logger.warning(f"局部截图失败，尝试全页截图: {e}")
                     await page.screenshot(path=str(file_path), full_page=True)
-                    
-                await browser.close()
+            finally:
+                await page.close()  # 关闭页面但保留浏览器实例
         except Exception as e:
             logger.error(f"渲染过程发生严重错误: {e}")
             raise e
