@@ -32,48 +32,38 @@ pip install "curl_cffi>=0.7.0" playwright jinja2
 playwright install chromium
 ```
 
-⚙️ 配置说明 (Cookie)
+### ⚙️ 配置说明 (Cookie)
 
-为了获取完整的用户信息（如头像、名称等），强烈建议配置 AICU Cookie。
+为了获取完整的用户信息（如头像、名称等），**强烈建议**配置 AICU Cookie。
 
-1. 获取 Cookie
+#### 1. 获取 Cookie
 
-PC 端：
+**PC 端：**
 
-· 登录 aicu.cc
-· 按 F12 打开开发者工具
-· 点击「网络」(Network)
-· 刷新页面
-· 复制请求头中的 Cookie 值 我们只需要划线部分的cookie就好.
-. ![如图所示(我们只需要划线部分的cookie就好.)](https://youke1.picui.cn/s1/2025/12/02/692e4b26b66ac.jpg)
+* 登录 [aicu.cc](https://aicu.cc)
+* 按 `F12` 打开开发者工具
+* 点击「网络」(Network) 标签
+* 刷新页面
+* 在请求列表中点击任意一个请求，复制请求头（Request Headers）中的 `Cookie` 值。
 
+![Cookie 获取示意图](https://youke1.picui.cn/s1/2025/12/02/692e4b26b66ac.jpg)
+*（如图所示，我们只需要划线部分的 Cookie 值即可）*
 
+**移动端：**
 
-移动端：
+* 可以使用 **Via 浏览器** 等支持查看网络资源的浏览器获取 Cookie。
+* *Via 操作简述*：点击地址栏左上角的角标 -> 选择查看 Cookie -> 复制即可。
 
-· 可以使用 Via 浏览器等支持查看资源的浏览器获取 Cookie via只需要点击左上角角标查看cookie，复制即可
+> ⚠️ **注意**：
+> 如果不配置 Cookie，可能导致头像和名称无法正常显示。
 
-⚠️ 注意：如果不配置 Cookie，可能导致头像和名称无法正常显示
+#### 2. 填写配置
 
-2. 填写配置
+进入 AstrBot 管理面板，按照以下路径操作：
 
-进入 AstrBot 管理面板：
+`插件` → `AICU-b` → `配置` → 在对应位置填入获取到的 Cookie 值。
 
-```
-插件 → AICU-b → 配置 → 在对应位置填入获取到的 cookie
-```
+### 💬 使用指令
 
-💬 使用指令
-
-```
+```text
 /uid <uid>
-```
-
-
-🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
----
-
-最后更新：{2025.11.30}
