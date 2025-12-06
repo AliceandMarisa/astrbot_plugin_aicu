@@ -97,10 +97,3 @@ playwright install chromium
 数据来源：本插件数据主要来自 aicu.cc 及相关API
 隐私保护：仅查询公开可获取的用户数据
 
-### ⚠️ 注意事项
-Cookie配置：为获取完整功能，建议配置有效的AICU Cookie
-查询限制：大量查询可能导致API限制，请合理使用
-
-### 🤝 贡献指南
-欢迎提交 Issue 和 Pull Request 来改进本插件！
-
