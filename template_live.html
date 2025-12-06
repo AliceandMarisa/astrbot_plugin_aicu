@@ -9,8 +9,6 @@
             --text-gray: #9499a0;
             --bg-color: #f1f2f3;
             --card-bg: #ffffff;
-            --ai-color: #00a1d6;
-            --ai-bg: #f0f9ff;
         }
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -95,12 +93,6 @@
         .stat-num { font-weight: bold; font-size: 17px; }
         .stat-name { color: var(--text-gray); font-size: 12px; }
 
-        .sign-box {
-            margin-top: 15px; font-size: 13px; color: #666; line-height: 1.6;
-            background: #f6f7f8; padding: 10px 15px; border-radius: 8px;
-            word-break: break-all;
-        }
-
         .info-bar {
             margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px;
             padding-top: 15px; border-top: 1px solid #f1f2f3;
@@ -112,68 +104,13 @@
         .pill-device { background: #e7f9f3; color: #0aa86d; }
         .pill-name { background: #fff; color: var(--text-gray); border: 1px solid #eee; }
 
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
         .g-card {
             background: var(--card-bg); padding: 15px; border-radius: 12px;
             text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
         .g-val { font-size: 20px; font-weight: bold; color: #00a1d6; }
         .g-label { font-size: 12px; color: var(--text-gray); margin-top: 4px; }
-
-        /* AI分析样式 */
-        .ai-analysis-section {
-            background: var(--ai-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            border-left: 4px solid var(--ai-color);
-        }
-        
-        .ai-analysis-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .ai-analysis-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--ai-color);
-        }
-        
-        .ai-analysis-badge {
-            background: var(--ai-color);
-            color: white;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: bold;
-        }
-        
-        .ai-analysis-content {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-main);
-        }
-        
-        .ai-analysis-item {
-            margin-bottom: 12px;
-            padding-left: 15px;
-            border-left: 2px solid rgba(0, 161, 214, 0.2);
-        }
-        
-        .ai-analysis-item-title {
-            font-weight: 600;
-            color: var(--ai-color);
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        
-        .ai-analysis-item-content {
-            color: #444;
-            font-size: 13px;
-        }
 
         .list-wrap {
             background: var(--card-bg); border-radius: 12px; padding: 20px;
@@ -182,14 +119,47 @@
         .list-header {
             font-size: 16px; font-weight: bold; color: var(--text-main);
             margin-bottom: 20px; border-left: 4px solid #fb7299; padding-left: 10px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .item { padding: 15px 0; border-bottom: 1px solid #f1f2f3; }
+        .list-subtitle {
+            font-size: 12px; color: var(--text-gray); font-weight: normal;
+        }
+        .room-group { margin-bottom: 25px; }
+        .room-header {
+            font-size: 14px; font-weight: bold; color: var(--text-main);
+            margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #f1f2f3;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .room-anchor {
+            font-size: 12px; color: #fb7299; background: #fff0f6;
+            padding: 2px 8px; border-radius: 4px;
+        }
+        .room-name {
+            font-size: 13px; color: var(--text-gray);
+            max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .item { padding: 10px 0; border-bottom: 1px dashed #f1f2f3; }
         .item:last-child { border-bottom: none; }
-        .item-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); margin-bottom: 8px; }
-        .rank-high { color: #ff6699; background: #fff0f6; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
-        .item-content { font-size: 14px; color: var(--text-main); line-height: 1.6; }
+        .item-meta { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 11px; 
+            color: var(--text-gray); 
+            margin-bottom: 4px;
+        }
+        .item-content { 
+            font-size: 13px; 
+            color: var(--text-main); 
+            line-height: 1.5;
+            word-break: break-all;
+        }
 
-        .footer { text-align: center; font-size: 12px; color: #ccc; margin-top: 10px; }
+        .footer { 
+            text-align: center; 
+            font-size: 12px; 
+            color: #ccc; 
+            margin-top: 10px; 
+        }
     </style>
 </head>
 <body>
@@ -222,10 +192,6 @@
                     </div>
                 </div>
 
-                {% if profile.sign %}
-                <div class="sign-box">"{{ profile.sign }}"</div>
-                {% endif %}
-
                 <div class="info-bar">
                     {% if device_name != '未知设备' %}
                     <div class="pill pill-device">📱 {{ device_name }}</div>
@@ -241,7 +207,7 @@
         <div class="stats-grid">
             <div class="g-card">
                 <div class="g-val">{{ total_count }}</div>
-                <div class="g-label">抓取评论数</div>
+                <div class="g-label">总直播弹幕</div>
             </div>
             <div class="g-card">
                 <div class="g-val">{{ active_hour }}点</div>
@@ -251,63 +217,53 @@
                 <div class="g-val">{{ avg_length }}</div>
                 <div class="g-label">平均字数</div>
             </div>
-        </div>
-
-        <!-- AI分析区域 -->
-        {% if enable_ai_analysis and ai_analysis %}
-        <div class="ai-analysis-section">
-            <div class="ai-analysis-header">
-                <div class="ai-analysis-title">🤖 AI评论分析</div>
-                <div class="ai-analysis-badge">智能分析</div>
-            </div>
-            <div class="ai-analysis-content">
-                {% if ai_analysis is string %}
-                    {{ ai_analysis|replace('\n', '<br>')|safe }}
-                {% else %}
-                    <div class="ai-analysis-item">
-                        <div class="ai-analysis-item-title">评论内容主题和情感倾向</div>
-                        <div class="ai-analysis-item-content">评论中表达的主要观点和共同主题包括：首先，评论者们对顾白渊的新动态（包括更新、视频、角色设计等）表示非常高兴，并表达出对其的爱慕和支持。评论中也提到了对冯律师的仰慕，这表明了对这两个角色之间的关联和情感联系的强烈关注。评论中也提到了对其他角色（如斋藤老师）的关注和支持，这些表明了对角色之间关系的复杂性和观众的参与度。</div>
-                    </div>
-                    <div class="ai-analysis-item">
-                        <div class="ai-analysis-item-title">发言者的兴趣偏好</div>
-                        <div class="ai-analysis-item-content">评论者们主要是 anime、manga 和音乐的 fans，他们对这些作品有着深厚的感情，尤其是对角色和角色关系的关注。</div>
-                    </div>
-                    <div class="ai-analysis-item">
-                        <div class="ai-analysis-item-title">语言风格和表达特点</div>
-                        <div class="ai-analysis-item-content">评论者们通常表现出情绪高涨、激动和热情，表达出对他们喜爱的作品的热情和支持。评论者们使用了丰富的表情符号，如[微笑]、[傲娇]、[doge]等，表达出明显的兴趣和情感。</div>
-                    </div>
-                    <div class="ai-analysis-item">
-                        <div class="ai-analysis-item-title">可能的年龄群体或身份特征</div>
-                        <div class="ai-analysis-item-content">评论者们可能来自于青少年和年轻的成年人群群体，他们对 anime 和 manga 有着浓厚的兴趣，并且对角色关系的关注度较高。</div>
-                    </div>
-                {% endif %}
+            <div class="g-card">
+                <div class="g-val">{{ room_count }}</div>
+                <div class="g-label">直播间数</div>
             </div>
         </div>
-        {% endif %}
 
         <div class="list-wrap">
-            <div class="list-header">近期动态</div>
-            {% for reply in replies %}
-            <div class="item">
-                <div class="item-meta">
-                    <span>{{ reply.readable_time }}</span>
-                    <span>
-                        #{{ loop.index }}
-                        {% if reply.rank > 0 %}
-                        <span class="rank-high">高赞</span>
-                        {% endif %}
-                    </span>
+            <div class="list-header">
+                直播弹幕记录 ({{ fetched_count }}/{{ total_count }})
+                <span class="list-subtitle">主播数: {{ anchor_count }}</span>
+            </div>
+            
+            {% set grouped = {} %}
+            {% for item in live_list %}
+                {% set room_key = item.room_id ~ "_" ~ item.anchor_name %}
+                {% if room_key not in grouped %}
+                    {% set _ = grouped.update({room_key: []}) %}
+                {% endif %}
+                {% set _ = grouped[room_key].append(item) %}
+            {% endfor %}
+            
+            {% for room_key, items in grouped.items() %}
+            <div class="room-group">
+                <div class="room-header">
+                    <span class="room-name">{{ items[0].room_name }}</span>
+                    <span class="room-anchor">{{ items[0].anchor_name }}</span>
                 </div>
-                <div class="item-content">{{ reply.message }}</div>
+                {% for item in items[:10] %} {# 每个直播间最多显示10条 #}
+                <div class="item">
+                    <div class="item-meta">
+                        <span>{{ item.readable_time }}</span>
+                        <span>@{{ item.username }}</span>
+                    </div>
+                    <div class="item-content">{{ item.content }}</div>
+                </div>
+                {% endfor %}
+                {% if items|length > 10 %}
+                <div style="text-align: center; padding: 10px; font-size: 12px; color: var(--text-gray);">
+                    还有 {{ items|length - 10 }} 条弹幕...
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
 
         <div class="footer">
-            Render: AstrBot | Data Source: AICU
-            {% if enable_ai_analysis and ai_analysis %}
-            | 🤖 AI分析已启用
-            {% endif %}
+            Render: AstrBot | Data Source: AICU | 查询类型: {{ search_type }}
         </div>
     </div>
 </body>

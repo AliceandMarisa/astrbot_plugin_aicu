@@ -4,5 +4,59 @@
         "description": "AICU 网站 Cookie (必须包含 ASession=...)",
         "default": "",
         "tip": "请在浏览器登录 aicu.cc 后按 F12 获取 Network 请求中的 Cookie"
+    },
+    "max_danmaku_count": {
+        "type": "int",
+        "description": "最大弹幕查询数量",
+        "default": 100,
+        "tip": "单次查询最多获取的弹幕/直播弹幕条数"
+    },
+    "enable_video_info": {
+        "type": "bool",
+        "description": "启用视频信息获取",
+        "default": true,
+        "tip": "查询弹幕时是否获取视频标题信息"
+    },
+    "dd_page_size": {
+        "type": "int",
+        "description": "入场信息每页查询数量",
+        "default": 20,
+        "tip": "入场信息查询每页显示的数量"
+    },
+    "max_reply_count": {
+        "type": "int",
+        "description": "最大评论查询数量",
+        "default": 100,
+        "tip": "单次查询最多获取的评论条数"
+    },
+    "browser_timeout": {
+        "type": "int",
+        "description": "浏览器操作超时时间",
+        "default": 30,
+        "tip": "浏览器渲染图片的超时时间(秒)"
+    },
+    "browser_headless": {
+        "type": "bool",
+        "description": "使用无头浏览器模式",
+        "default": true,
+        "tip": "是否使用无头模式运行浏览器(不显示界面)"
+    },
+    "enable_ai_analysis": {
+        "type": "bool",
+        "description": "启用AI分析评论功能",
+        "default": false,
+        "tip": "是否在查询评论时启用AI分析（需要Cookie且可能会增加查询时间）"
+    },
+    "max_ai_comments": {
+        "type": "int",
+        "description": "AI分析的最大评论条数",
+        "default": 20,
+        "tip": "用于AI分析的评论最大条数，避免评论过多导致分析时间过长"
+    },
+    "ai_analysis_timeout": {
+        "type": "int",
+        "description": "AI分析超时时间",
+        "default": 30,
+        "tip": "AI分析请求的超时时间(秒)，建议设置为30-60秒"
     }
 }

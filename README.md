@@ -1,31 +1,38 @@
-🔍 AstrBot AICU - B站评论查询插件
+🔍 AstrBot AICU - B站数据分析插件
 
-一个用于 AstrBot 的插件，可以通过 UID 查询 AICU 数据，生成包含 B 站用户资料、设备型号及近期评论统计的图片报表。
+一个用于 AstrBot 的插件，可查询 B 站用户的评论、弹幕、直播互动及入场记录等多维度数据，并生成可视化的图片报表。
 
-📁 目录结构
+### 📁 目录结构
 
 ```
 astrbot_plugin_aicu_analysis/
-├── main.py              # 核心逻辑
-├── template.html        # 渲染模板
-├── metadata.yaml        # 插件元数据
-├── requirements.txt     # 依赖库
-├── _conf_schema.json    # 配置定义
-└── README.md            # 说明文档
+├── main.py               # 核心插件逻辑
+├── template.html         # 评论查询渲染模板
+├── template_danmaku.html # 弹幕查询渲染模板
+├── template_live.html    # 直播弹幕渲染模板
+├── template_entry.html   # 入场记录渲染模板
+├── metadata.yaml         # 插件元数据
+├── requirements.txt      # 依赖库
+├── _conf_schema.json     # 配置定义
+└── README.md             # 说明文档
 ```
 
-✨ 功能特性
+### ✨ 功能特性
 
-· 用户信息：获取 B 站头像、等级、粉丝数、关注数及个性签名
-· 设备分析：展示用户评论时使用的设备型号和曾用名
-· 活跃统计：抓取近期 100 条评论，统计活跃时段
-· 精美报表：使用 Playwright + Jinja2 生成 HTML 并渲染为图片发送
+- 用户评论分析：获取用户评论记录、活跃时段、发言习惯
+- 视频弹幕查询：查看用户在视频中的弹幕历史
+- 直播弹幕分析：分析用户在直播间的互动记录
+- 入场记录追踪：查询用户进入直播间的时间、观看时长等数据
+- B站基础资料：头像、等级、粉丝数、关注数、个性签名
+- 设备识别：展示用户评论时使用的设备型号
+- 历史昵称：显示用户曾用名记录
+- 粉丝牌与大航海：查询用户拥有的粉丝牌和大航海信息
+- AI评论分析（可选）：使用AI分析用户评论特点和发言风格
+- 精美报表：使用 Playwright + Jinja2 生成 HTML 并渲染为图片发送
 
-📝 注：内容来自 aicu.cc，不保证真实性和实时性
+### 🛠️ 安装与依赖
 
-🛠️ 安装与依赖
-
-使用前请确保在控制台安装必要的 Python 依赖：
+使用前请确保在控制台执行以下命令安装必要的 Python 依赖：
 
 ```bash
 pip install "curl_cffi>=0.7.0" playwright jinja2
@@ -59,11 +66,39 @@ playwright install chromium
 
 #### 2. 填写配置
 
-进入 AstrBot 管理面板，按照以下路径操作：
+| 指令 | 说明 |
+|---|---|
+| `AICU 网站 Cookie (必须包含 ASession=...)` | 填写获取到的cookie |
+| `max_danmaku_count` | 最大弹幕查询数量（默认：100） |
+| `max_reply_count` | 最大评论查询数量（默认：100） |
+| `dd_page_size` | 入场信息每页查询数量（默认：20） |
+| `enable_video_info` | 是否启用视频信息获取（默认：true） |
+| `enable_ai_analysis` | 是否启用AI分析评论功能（默认：false） |
+| `max_ai_comments` | AI分析的最大评论条数（默认：20） |
+| `browser_timeout` | 浏览器渲染图片的超时时间（秒，默认：30） |
+| `ai_analysis_timeout` | AI分析请求的超时时间（秒，默认：30） |
+| `browser_headless` | 是否使用无头浏览器模式（默认：true） |
 
-`插件` → `AICU-b` → `配置` → 在对应位置填入获取到的 Cookie 值。
+---  
 
 ### 💬 使用指令
 
 ```text
-/uid <uid>
+/uid <UID>
+/弹幕 <UID>
+/直播弹幕 <UID>
+/入场 <UID>
+/b站帮助
+```
+
+### 📊 数据说明
+数据来源：本插件数据主要来自 aicu.cc 及相关API
+隐私保护：仅查询公开可获取的用户数据
+
+### ⚠️ 注意事项
+Cookie配置：为获取完整功能，建议配置有效的AICU Cookie
+查询限制：大量查询可能导致API限制，请合理使用
+
+### 🤝 贡献指南
+欢迎提交 Issue 和 Pull Request 来改进本插件！
+

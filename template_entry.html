@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --primary-color: #fb7299;
+            --primary-dark: #e65c87;
+            --text-main: #18191c;
+            --text-gray: #9499a0;
+            --bg-color: #f1f2f3;
+            --card-bg: #ffffff;
+            --live-color: #ff6699;
+            --live-bg: #fff0f6;
+            --game-color: #00a1d6;
+            --entertainment-color: #ff9500;
+            --virtual-color: #9d3cff;
+        }
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px;
+            width: 750px;
+            box-sizing: border-box;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        
+        .banner {
+            height: 140px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .profile-content {
+            padding: 0 24px 24px 24px;
+            position: relative;
+        }
+
+        .avatar-wrap {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            border: 4px solid var(--card-bg);
+            margin-top: -44px;
+            overflow: hidden;
+            background: #fff;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .avatar { width: 100%; height: 100%; object-fit: cover; }
+
+        .header-top { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+        }
+        
+        .uid-display {
+            font-size: 14px; 
+            color: var(--text-gray); 
+            margin-top: 10px;
+            padding: 4px 12px;
+            background: #f6f7f8;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .username {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .level-tag {
+            font-size: 11px; 
+            color: #fff; 
+            font-style: italic; 
+            padding: 1px 5px;
+            border-radius: 3px; 
+            background: #ccc; 
+            font-weight: bold; 
+            vertical-align: middle;
+            height: 16px; 
+            line-height: 16px;
+        }
+        .lv0,.lv1,.lv2 { background-color: #bfbfbf; }
+        .lv3 { background-color: #76c3f1; }
+        .lv4 { background-color: #ffb37c; }
+        .lv5 { background-color: #f04c49; }
+        .lv6 { background-color: #ff0000; }
+
+        .vip-tag {
+            background-color: #fb7299; 
+            color: white; 
+            font-size: 11px;
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-weight: normal; 
+            vertical-align: middle;
+        }
+
+        .stats-bar {
+            display: flex; 
+            gap: 20px; 
+            margin-top: 10px; 
+            font-size: 14px; 
+            color: var(--text-main);
+        }
+        .stat-num { 
+            font-weight: bold; 
+            font-size: 17px; 
+            color: #667eea;
+        }
+        .stat-name { 
+            color: var(--text-gray); 
+            font-size: 12px; 
+        }
+
+        .sign-box {
+            margin-top: 15px; 
+            font-size: 13px; 
+            color: #666; 
+            line-height: 1.6;
+            background: #f6f7f8; 
+            padding: 10px 15px; 
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        .info-bar {
+            margin-top: 15px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px;
+            padding-top: 15px; 
+            border-top: 1px solid #f1f2f3;
+        }
+        .pill {
+            font-size: 12px; 
+            padding: 4px 10px; 
+            border-radius: 20px;
+            display: flex; 
+            align-items: center; 
+            gap: 4px;
+        }
+        .pill-device { 
+            background: #e7f9f3; 
+            color: #0aa86d; 
+        }
+        .pill-name { 
+            background: #fff; 
+            color: var(--text-gray); 
+            border: 1px solid #eee; 
+        }
+
+        /* 粉丝牌和大航海样式 */
+        .medal-section, .guard-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .medal-list, .guard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .medal-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ccc;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .medal-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .medal-item.wearing {
+            border-left: 4px solid #ff6699;
+            background: linear-gradient(90deg, rgba(255,102,153,0.1), rgba(255,102,153,0.05)) !important;
+        }
+
+        .medal-name {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wearing-tag {
+            background: #ff6699;
+            color: white;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: normal;
+        }
+
+        .medal-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .target-name {
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .medal-stats {
+            color: var(--text-gray);
+        }
+
+        .guard-indicator {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: linear-gradient(135deg, #ffd700, #ff9500);
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .guard-item {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #00a1d6;
+            background: linear-gradient(90deg, rgba(0,161,214,0.05), rgba(0,161,214,0.02));
+        }
+
+        .guard-level-1 {
+            border-left-color: #ff3860;
+            background: linear-gradient(90deg, rgba(255,56,96,0.08), rgba(255,56,96,0.03));
+        }
+
+        .guard-level-2 {
+            border-left-color: #ff9500;
+            background: linear-gradient(90deg, rgba(255,149,0,0.08), rgba(255,149,0,0.03));
+        }
+
+        .guard-level-3 {
+            border-left-color: #00a1d6;
+            background: linear-gradient(90deg, rgba(0,161,214,0.08), rgba(0,161,214,0.03));
+        }
+
+        .guard-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .guard-badge {
+            font-size: 13px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .guard-level-1 .guard-badge {
+            background: linear-gradient(135deg, #ff3860, #ff0033);
+        }
+
+        .guard-level-2 .guard-badge {
+            background: linear-gradient(135deg, #ff9500, #ff6600);
+        }
+
+        .guard-level-3 .guard-badge {
+            background: linear-gradient(135deg, #00a1d6, #0077cc);
+        }
+
+        .guard-anchor {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+            flex: 1;
+        }
+
+        .guard-rank {
+            background: #ff6699;
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .guard-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .medal-tag {
+            font-weight: bold;
+            background: rgba(0,0,0,0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .accompany-days {
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        /* 入场统计 */
+        .entry-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: var(--card-bg); 
+            padding: 15px; 
+            border-radius: 12px;
+            text-align: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .stat-icon {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+        
+        .stat-val { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #667eea; 
+            margin-bottom: 4px;
+        }
+        
+        .stat-label { 
+            font-size: 12px; 
+            color: var(--text-gray); 
+        }
+
+        /* 最常观看 */
+        .favorite-anchor {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            text-align: center;
+        }
+        
+        .favorite-label {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 5px;
+        }
+        
+        .favorite-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+        
+        .favorite-count {
+            font-size: 13px;
+            color: #667eea;
+            background: #f0f4ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* 入场记录列表 */
+        .list-wrap {
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        
+        .list-header {
+            font-size: 16px; 
+            font-weight: bold; 
+            color: var(--text-main);
+            margin-bottom: 20px; 
+            border-left: 4px solid #667eea; 
+            padding-left: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .list-count {
+            font-size: 13px;
+            color: var(--text-gray);
+            font-weight: normal;
+        }
+        
+        .entry-item {
+            padding: 15px 0; 
+            border-bottom: 1px solid #f1f2f3;
+            transition: background-color 0.2s;
+        }
+        
+        .entry-item:hover {
+            background-color: #fafafa;
+            padding: 15px;
+            margin: 0 -15px;
+            border-radius: 8px;
+        }
+        
+        .entry-item:last-child { 
+            border-bottom: none; 
+        }
+        
+        /* 直播分区样式 */
+        .area-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .game-area {
+            background: #e6f7ff;
+            color: var(--game-color);
+        }
+        
+        .entertainment-area {
+            background: #fff7e6;
+            color: var(--entertainment-color);
+        }
+        
+        .virtual-area {
+            background: #f3e6ff;
+            color: var(--virtual-color);
+        }
+        
+        .other-area {
+            background: #f0f0f0;
+            color: var(--text-gray);
+        }
+        
+        /* 直播标签 */
+        .live-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            background: #f6f7f8;
+            color: var(--text-gray);
+            border-radius: 3px;
+        }
+        
+        .entry-header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .anchor-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .anchor-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f0f0f0;
+        }
+        
+        .anchor-details {
+            flex: 1;
+        }
+        
+        .anchor-name {
+            font-weight: bold; 
+            color: var(--text-main);
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+        
+        .anchor-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+        
+        .entry-time {
+            font-size: 12px; 
+            color: var(--text-gray);
+            text-align: right;
+            min-width: 120px;
+        }
+        
+        .live-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--live-bg);
+            color: var(--live-color);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .room-info {
+            margin-bottom: 10px;
+            padding-left: 50px;
+        }
+        
+        .room-title {
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 5px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .live-title {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .live-area-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        
+        .area-name {
+            color: var(--text-gray);
+        }
+        
+        /* 直播间数据统计 */
+        .live-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .live-stat-item {
+            text-align: center;
+        }
+        
+        .live-stat-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        
+        .live-stat-label {
+            font-size: 11px;
+            color: var(--text-gray);
+        }
+        
+        .watch-count .live-stat-value { color: #00a1d6; }
+        .like-count .live-stat-value { color: #ff9500; }
+        .income-count .live-stat-value { color: #ff3860; }
+        .danmaku-count .live-stat-value { color: #9d3cff; }
+        
+        .entry-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-gray);
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* 入场时间特殊样式 - 粉色加深 */
+        .entry-time-display {
+            color: var(--primary-dark);
+            font-weight: 700;
+            font-size: 13px;
+        }
+        
+        .entry-time-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .entry-notice {
+            color: var(--primary-dark);
+            font-weight: bold;
+            font-style: italic;
+            margin-left: 3px;
+        }
+        
+        .income-tag {
+            color: #ff3860;
+            font-weight: bold;
+        }
+        
+        .watch-duration {
+            color: #00a1d6;
+            font-weight: 500;
+        }
+        
+        .page-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--text-gray);
+        }
+        
+        .has-more {
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .footer { 
+            text-align: center; 
+            font-size: 12px; 
+            color: #ccc; 
+            margin-top: 10px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="profile-card">
+            <div class="banner"></div>
+            <div class="profile-content">
+                <div class="header-top">
+                    <div class="avatar-wrap">
+                        <img src="{{ profile.avatar }}" class="avatar" onerror="this.src='https://i0.hdslb.com/bfs/face/member/noface.jpg'">
+                    </div>
+                    <div class="uid-display">UID: {{ uid }}</div>
+                </div>
+
+                <div class="username">
+                    {{ profile.name }}
+                    <span class="level-tag lv{{ profile.level }}">LV{{ profile.level }}</span>
+                    {% if profile.vip_label %}
+                    <span class="vip-tag">{{ profile.vip_label }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="stats-bar">
+                    <div>
+                        <span class="stat-num">{{ profile.following }}</span> 
+                        <span class="stat-name">关注</span>
+                    </div>
+                    <div>
+                        <span class="stat-num">{{ profile.fans }}</span> 
+                        <span class="stat-name">粉丝</span>
+                    </div>
+                </div>
+
+                {% if profile.sign %}
+                <div class="sign-box">"{{ profile.sign }}"</div>
+                {% endif %}
+
+                <div class="info-bar">
+                    {% if device_name != '未知设备' %}
+                    <div class="pill pill-device">📱 {{ device_name }}</div>
+                    {% endif %}
+                    
+                    {% for name in history_names %}
+                    <div class="pill pill-name">🏷️ {{ name }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 粉丝牌信息 -->
+        {% if medals and medals|length > 0 %}
+        <div class="medal-section">
+            <div class="section-title">🎖️ 粉丝牌</div>
+            <div class="medal-list">
+                {% for medal in medals %}
+                <div class="medal-item {% if medal.is_wearing %}wearing{% endif %}" 
+                     style="border-left-color: {{ medal.color_border }}; background: linear-gradient(90deg, {{ medal.color_start }}20, {{ medal.color_end }}20);">
+                    <div class="medal-name" style="color: {{ medal.color_start }};">
+                        {{ medal.name }} Lv{{ medal.level }}
+                        {% if medal.is_wearing %}<span class="wearing-tag">佩戴中</span>{% endif %}
+                    </div>
+                    <div class="medal-info">
+                        <span class="target-name">{{ medal.target_name }}</span>
+                        <span class="medal-stats">
+                            亲密度 {{ medal.intimacy }}/{{ medal.next_intimacy }} · 今日 {{ medal.today_feed }}
+                        </span>
+                    </div>
+                    {% if medal.guard_level > 0 %}
+                    <div class="guard-indicator">
+                        {% if medal.guard_level == 3 %}舰长{% endif %}
+                        {% if medal.guard_level == 2 %}提督{% endif %}
+                        {% if medal.guard_level == 1 %}总督{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 大航海信息 -->
+        {% if guards and guards|length > 0 %}
+        <div class="guard-section">
+            <div class="section-title">🚢 大航海</div>
+            <div class="guard-list">
+                {% for guard in guards %}
+                <div class="guard-item guard-level-{{ guard.guard_level }}"
+                     style="border-left-color: {{ guard.color_border }};">
+                    <div class="guard-header">
+                        <span class="guard-badge">{{ guard.guard_name }}</span>
+                        <span class="guard-anchor">{{ guard.anchor_name }}</span>
+                        {% if guard.rank <= 3 %}
+                        <span class="guard-rank">TOP{{ guard.rank }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="guard-info">
+                        <span class="medal-tag" style="color: {{ guard.color_start }};">
+                            {{ guard.medal_name }} Lv{{ guard.medal_level }}
+                        </span>
+                        <span class="accompany-days">陪伴 {{ guard.accompany_days }} 天</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 入场统计 -->
+        <div class="entry-stats">
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-val">{{ total_count }}</div>
+                <div class="stat-label">总入场次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-val">{{ room_count }}</div>
+                <div class="stat-label">访问直播间</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👑</div>
+                <div class="stat-val">{{ anchor_count }}</div>
+                <div class="stat-label">关注主播数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-val">{{ avg_duration }}m</div>
+                <div class="stat-label">均观看时长</div>
+            </div>
+        </div>
+
+        <!-- 最常观看主播 -->
+        <div class="favorite-anchor">
+            <div class="favorite-label">最常观看主播</div>
+            <div class="favorite-name">{{ most_active_anchor }}</div>
+            <div class="favorite-count">累计观看次数最多</div>
+        </div>
+
+        <!-- 入场记录列表 -->
+        <div class="list-wrap">
+            <div class="list-header">
+                <span>📺 入场记录</span>
+                <span class="list-count">本页 {{ fetched_count }} 条</span>
+            </div>
+            
+            {% for entry in entry_list %}
+            <div class="entry-item">
+                <div class="entry-header">
+                    <div class="anchor-info">
+                        <img src="{{ entry.anchor_avatar }}" class="anchor-avatar" onerror="this.src='https://i0.hdslb.com/bfs/face/member/noface.jpg'">
+                        <div class="anchor-details">
+                            <div>
+                                <span class="anchor-name">{{ entry.anchor_name }}</span>
+                                {% if entry.is_living %}
+                                <span class="live-tag">直播中</span>
+                                {% endif %}
+                            </div>
+                            <div class="anchor-stats">
+                                <span>直播{{ entry.channel_total_live }}次</span>
+                                <span>弹幕{{ entry.channel_total_danmaku }}</span>
+                                <span>收入{{ entry.channel_total_income }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="entry-time">
+                        <div>{{ entry.readable_date }}</div>
+                        <div>{{ entry.readable_weekday }}</div>
+                    </div>
+                </div>
+                
+                <div class="room-info">
+                    <div class="room-title">{{ entry.room_title }}</div>
+                    <div class="live-title">{{ entry.live_title }}</div>
+                    
+                    <div class="live-area-info">
+                        {% if entry.parent_area %}
+                        <span class="area-badge 
+                            {% if entry.parent_area in ['网游', '单机游戏', '手游'] %}game-area
+                            {% elif entry.parent_area in ['娱乐', '电台'] %}entertainment-area
+                            {% elif entry.parent_area in ['虚拟主播'] %}virtual-area
+                            {% else %}other-area
+                            {% endif %}">
+                            {{ entry.parent_area }}
+                        </span>
+                        <span class="area-name">{{ entry.area }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if entry.tags and entry.tags|length > 0 %}
+                    <div class="live-tags">
+                        {% for tag in entry.tags %}
+                        <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 直播间数据统计 -->
+                    <div class="live-stats">
+                        <div class="live-stat-item watch-count">
+                            <div class="live-stat-value">{{ entry.watch_count }}</div>
+                            <div class="live-stat-label">观看</div>
+                        </div>
+                        <div class="live-stat-item like-count">
+                            <div class="live-stat-value">{{ entry.like_count }}</div>
+                            <div class="live-stat-label">点赞</div>
+                        </div>
+                        <div class="live-stat-item income-count">
+                            <div class="live-stat-value">{{ entry.total_income }}</div>
+                            <div class="live-stat-label">收入</div>
+                        </div>
+                        <div class="live-stat-item danmaku-count">
+                            <div class="live-stat-value">{{ entry.danmakus_count }}</div>
+                            <div class="live-stat-label">弹幕</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="entry-meta">
+                    <div class="meta-item">
+                        <span class="entry-time-label">入场时间:</span>
+                        <span class="entry-time-display">
+                            {{ entry.readable_entry_time.split(' ')[1] if entry.readable_entry_time != '未知时间' else '未知' }}
+                            <span class="entry-notice">• {{ profile.name }}进入直播间</span>
+                        </span>
+                    </div>
+                    <div class="meta-item watch-duration">
+                        <span>观看时长:</span>
+                        <span>{{ entry.watch_duration }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>直播时长:</span>
+                        <span>{{ entry.duration_minutes }}分钟</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="page-info">
+                第 {{ page_num }} 页 · 共 {{ total_count }} 条记录
+                {% if has_more %}
+                <div class="has-more">还有更多记录，请访问完整版查看</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="footer">
+            Render: AstrBot | Data Source: AICU · Laplace | {{ generate_time }}
+        </div>
+    </div>
+</body>
+</html>
