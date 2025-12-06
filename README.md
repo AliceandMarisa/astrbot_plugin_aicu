@@ -69,15 +69,15 @@ playwright install chromium
 | 指令 | 说明 |
 |---|---|
 | `AICU 网站 Cookie (必须包含 ASession=...)` | 填写获取到的cookie |
-| `max_danmaku_count` | 最大弹幕查询数量（默认：100） |
-| `max_reply_count` | 最大评论查询数量（默认：100） |
-| `dd_page_size` | 入场信息每页查询数量（默认：20） |
-| `enable_video_info` | 是否启用视频信息获取（默认：true） |
-| `enable_ai_analysis` | 是否启用AI分析评论功能（默认：false） |
-| `max_ai_comments` | AI分析的最大评论条数（默认：20） |
-| `browser_timeout` | 浏览器渲染图片的超时时间（秒，默认：30） |
-| `ai_analysis_timeout` | AI分析请求的超时时间（秒，默认：30） |
-| `browser_headless` | 是否使用无头浏览器模式（默认：true） |
+| `max_danmaku_count` | 单次查询最多获取的弹幕/直播弹幕条数 |
+| `max_reply_count` | 单次查询最多获取的评论条数 |
+| `dd_page_size` | 入场信息查询每页显示的数量 |
+| `enable_video_info` | 查询弹幕时是否获取视频标题信息 |
+| `enable_ai_analysis` | 是否在查询评论时启用AI分析 |
+| `max_ai_comments` | AI分析的最大评论条数 |
+| `ai_analysis_timeout` | AI分析请求的超时时间(秒)，建议设置为30-60秒 |
+| `browser_timeout` | 浏览器渲染图片的超时时间(秒) |
+| `browser_headless` | 是否使用无头模式运行浏览器 |
 
 ---  
 
