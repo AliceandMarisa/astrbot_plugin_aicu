@@ -40,6 +40,7 @@ class AicuAnalysisPlugin(Star):
     AICU_AI_ANALYSIS_URL = "https://api.aicu.cc/ai"  # AI分析评论
 
     BILI_VIDEO_INFO_URL = "https://api.bilibili.com/x/web-interface/view"  # B站视频信息API
+    BILI_USER_CARD_URL = "https://api.bilibili.com/x/web-interface/card"   # B站用户空间卡片API
 
     DEFAULT_REPLY_PAGE_SIZE = 100  # 默认抓取评论数
     DEFAULT_DANMAKU_PAGE_SIZE = 100  # 默认弹幕查询数量
@@ -437,10 +438,44 @@ class AicuAnalysisPlugin(Star):
                 logger.warning(f"[AICU] 获取视频信息失败: {e}")
         return None
 
+    async def _get_bili_user_profile(self, uid: str):
+        """直接从 B 站获取用户空间信息（头像/昵称/粉丝等）"""
+        params = {
+            "mid": uid,
+            "photo": "1",
+        }
+        headers = {
+            "User-Agent": self.DEFAULT_HEADERS.get("User-Agent"),
+            "Referer": f"https://space.bilibili.com/{uid}",
+        }
+        if self.config.get("cookie"):
+            headers["cookie"] = self.config.get("cookie")
+
+        async with AsyncSession() as session:
+            try:
+                resp = await session.get(
+                    self.BILI_USER_CARD_URL,
+                    params=params,
+                    headers=headers,
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("code") == 0:
+                        return data
+                    else:
+                        logger.warning(
+                            f"[AICU] B站用户卡片接口返回异常 code={data.get('code')}, message={data.get('message')}"
+                        )
+            except Exception as e:
+                logger.warning(f"[AICU] 获取 B 站用户空间信息失败: {e}")
+        return None
+
     # ================= 2. 原有评论查询功能 =================
     async def _fetch_all_data(self, uid: str, page_size: int):
         """并发获取所有用户数据"""
-        task_bili = self._make_request(self.AICU_BILI_API_URL, {'mid': uid})
+        # 个人信息直接走 B 站官方接口，避免依赖已失效的 worker.aicu.cc
+        task_bili = self._get_bili_user_profile(uid)
         task_mark = self._make_request(self.AICU_MARK_API_URL, {'uid': uid})
 
         reply_data = await self._make_request(
@@ -1124,7 +1159,7 @@ class AicuAnalysisPlugin(Star):
         return str(file_path)
 
     # ================= 7. 指令入口 =================
-    @filter.command("uid")
+    @filter.command("评论")
     async def analyze_uid(self, event: AstrMessageEvent, uid: str):
         """查询 AICU 用户画像 - 支持多种UID格式"""
         # 验证并提取UID
@@ -1218,7 +1253,7 @@ class AicuAnalysisPlugin(Star):
 
             # 获取用户基本信息
             bili_raw, mark_raw, _ = await asyncio.gather(
-                self._make_request(self.AICU_BILI_API_URL, {'mid': extracted_uid}),
+                self._get_bili_user_profile(extracted_uid),
                 self._make_request(self.AICU_MARK_API_URL, {'uid': extracted_uid}),
                 asyncio.sleep(0)
             )
@@ -1288,7 +1323,7 @@ class AicuAnalysisPlugin(Star):
 
             # 获取用户基本信息
             bili_raw, mark_raw, _ = await asyncio.gather(
-                self._make_request(self.AICU_BILI_API_URL, {'mid': extracted_uid}),
+                self._get_bili_user_profile(extracted_uid),
                 self._make_request(self.AICU_MARK_API_URL, {'uid': extracted_uid}),
                 asyncio.sleep(0)
             )
@@ -1349,7 +1384,7 @@ class AicuAnalysisPlugin(Star):
             # 并发获取所有数据
             tasks = [
                 self._fetch_entry_data(extracted_uid, page_size=page_size),
-                self._make_request(self.AICU_BILI_API_URL, {'mid': extracted_uid}),
+                self._get_bili_user_profile(extracted_uid),
                 self._make_request(self.AICU_MARK_API_URL, {'uid': extracted_uid}),
                 self._fetch_medal_data(extracted_uid),
                 self._fetch_guard_data(extracted_uid)
@@ -1416,9 +1451,9 @@ class AicuAnalysisPlugin(Star):
 🔍 可用命令：
 
 1️⃣ 用户评论查询
-📝 命令：/uid <UID>
+📝 命令：/评论 <UID>
 📋 说明：查询B站用户的评论记录、设备信息和活跃时段
-💡 示例：/uid 123456789
+💡 示例：/评论 123456789
 
 2️⃣ 弹幕记录查询
 📝 命令：/弹幕 <UID>
